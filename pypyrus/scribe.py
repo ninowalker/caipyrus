@@ -93,14 +93,14 @@ class Canvas(object):
         #self.ctx.set_font_face(ff)
     
 class GeographicCanvas(Canvas):
-    def __init__(self, width, height, bounds, extent=(-180,-90,180,90)):
+    def __init__(self, width, height, bounds):
         super(GeographicCanvas, self).__init__(width, height, bounds)
         # flip the axes from upper left, to lower left
         self.scale_strokes(True)
         fx = 1.0 * self.scale_x
         fy = -1.0 * self.scale_y
-        left = 0-extent[0]
-        bottom = extent[1]
+        left = 0 - bounds[0]
+        bottom = bounds[1]
         mtrx = cairo.Matrix(fx,0,0,fy,
                             left*self.scale_x,
                             height + bottom*self.scale_y)
@@ -118,7 +118,7 @@ if __name__ == '__main__':
     r.circle((100,100), 10)
     r.write_to_png("canvas0.png")
 
-    r = GeographicCanvas(256,256, (0,0,256,256), (0,0,256,256))
+    r = GeographicCanvas(256,256, (0,0,256,256))
     r.background(cfill=WHITE)
     r.circle((0,0), 10)
     r.line(coords=(0,0,50,50,50,100))
@@ -126,7 +126,7 @@ if __name__ == '__main__':
     r.rectangle((50,50,200,200))
     r.write_to_png("gcanvas0.png")
 
-    r = GeographicCanvas(256,256, (45,45,90,90), extent=(45,45,90,90))
+    r = GeographicCanvas(256,256, (45,45,90,90))
     r.background(cfill=WHITE)
     r.circle((0,0), 10)
     r.circle((45,45), 10)
@@ -137,5 +137,26 @@ if __name__ == '__main__':
     r.rectangle((45,45,90,90))
     r.write_to_png("gcanvas1.png")
 
+    r = GeographicCanvas(256*2,256, (45,45,90,90))
+    r.background(cfill=WHITE)
+    r.circle((0,0), 10)
+    r.circle((45,45), 10)
+    r.circle((90,90), 10)    
+    r.line(coords=(45,45,90,90))
+    r.rectangle((45,45,50,50), cfill=(1,0,0,1))
+    r.scale_strokes(False)
+    r.rectangle((45,45,90,90))
+    r.write_to_png("gcanvas2.png")
+
+    r = GeographicCanvas(256*2,256, (-180,-90,180,90))
+    r.background(cfill=WHITE)
+    r.circle((0,0), 10)
+    r.circle((45,45), 10)
+    r.circle((90,90), 10)    
+    r.line(coords=(45,45,90,90))
+    r.rectangle((45,45,50,50), cfill=(1,0,0,1))
+    r.scale_strokes(False)
+    r.rectangle((45,45,90,90))
+    r.write_to_png("gcanvas3.png")
     
 
