@@ -15,6 +15,7 @@ class Canvas(object):
         else:
             self.bounds = (0, 0, width, height)
         self.ctx = cairo.Context(self.s)
+        self.scale_strokes(False)
         #self.set_font_face()
         #self.ctx.scale(width, height)
 
@@ -34,6 +35,13 @@ class Canvas(object):
     def scale_y(self):
         return float(self.h) / self.dy
 
+    def scale_strokes(self, yn=True):
+        if yn:
+            self._stroke_scalar = 1.0 / ( (self.scale_x + self.scale_y) / 2.0 )
+        else:
+            self._stroke_scalar = 1.0
+        
+
     def write_to_png(self, filename):
         #self.ctx.rectangle(*self.bounds)
         #self.ctx.clip_extents(*self.bounds)
@@ -44,17 +52,17 @@ class Canvas(object):
         for i in range(2, len(coords), 2):
             self.ctx.line_to(coords[i], coords[i+1])
         self.ctx.set_source_rgba (*cstroke) # Solid color
-        self.ctx.set_line_width(stroke)
+        self.ctx.set_line_width(stroke*self._stroke_scalar)
         self.ctx.set_line_cap(cap)
         self.ctx.stroke()
 
     def circle(self, center=None, radius=None, cfill=WHITE, cstroke=BLACK, stroke=1):
-        self.ctx.set_line_width(stroke)
         self.ctx.arc(center[0], center[1], radius, 0, 2 * math.pi)
+        self.ctx.set_source_rgba(*cfill)
+        self.ctx.fill_preserve()
+        self.ctx.set_line_width(stroke*self._stroke_scalar)
         self.ctx.set_source_rgba(*cstroke)
         self.ctx.stroke()
-        self.ctx.set_source_rgba(*cfill)
-        self.ctx.fill()
 
     def background(self, cfill=WHITE):
         self.ctx.rectangle(self.bounds[0], self.bounds[1], self.dx, self.dy)
@@ -62,12 +70,12 @@ class Canvas(object):
         self.ctx.set_source_rgba(*cfill)
         self.ctx.fill()
 
-    def rectangle(self, bounds=None, cfill=TRANSPARENT, cstroke=BLACK):
-        print bounds[0], bounds[1], bounds[2] - bounds[0], bounds[3] - bounds[1]
+    def rectangle(self, bounds=None, cfill=TRANSPARENT, cstroke=BLACK, stroke=1):
         self.ctx.move_to(bounds[0], bounds[1])
         self.ctx.rectangle(bounds[0], bounds[1], bounds[2] - bounds[0], bounds[3] - bounds[1])
         self.ctx.set_source_rgba(*cfill)
         self.ctx.fill_preserve()
+        self.ctx.set_line_width(stroke*self._stroke_scalar)
         self.ctx.set_source_rgba(*cstroke)
         self.ctx.stroke()
 
@@ -88,6 +96,7 @@ class GeographicCanvas(Canvas):
     def __init__(self, width, height, bounds, extent=(-180,-90,180,90)):
         super(GeographicCanvas, self).__init__(width, height, bounds)
         # flip the axes from upper left, to lower left
+        self.scale_strokes(True)
         fx = 1.0 * self.scale_x
         fy = -1.0 * self.scale_y
         left = 0-extent[0]
@@ -124,6 +133,7 @@ if __name__ == '__main__':
     r.circle((90,90), 10)    
     r.line(coords=(45,45,90,90))
     r.rectangle((45,45,50,50), cfill=(1,0,0,1))
+    r.scale_strokes(False)
     r.rectangle((45,45,90,90))
     r.write_to_png("gcanvas1.png")
 
