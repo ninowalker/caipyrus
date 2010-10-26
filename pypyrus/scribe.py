@@ -95,17 +95,18 @@ class Canvas(object):
 class GeographicCanvas(Canvas):
     def __init__(self, width, height, bounds):
         super(GeographicCanvas, self).__init__(width, height, bounds)
-        # flip the axes from upper left, to lower left
         self.scale_strokes(True)
+        # flip the axes from upper left, to lower left, and shift the origin
         fx = 1.0 * self.scale_x
         fy = -1.0 * self.scale_y
-        left = 0 - bounds[0]
+        left = 0-bounds[0] 
         bottom = bounds[1]
         mtrx = cairo.Matrix(fx,0,0,fy,
                             left*self.scale_x,
                             height + bottom*self.scale_y)
+        print mtrx
         self.ctx.set_matrix(mtrx)
-        self.ctx.rectangle(*self.bounds)
+        self.ctx.rectangle(self.bounds[0],self.bounds[1],self.dx,self.dy)
         self.ctx.clip()
 
 
