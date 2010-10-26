@@ -88,20 +88,14 @@ class GeographicCanvas(Canvas):
         super(GeographicCanvas, self).__init__(width, height, bounds)
         #self.rectangle((0,0,width,height))
         # flip the axes from upper left, to lower left
-        fx = 1.0 #* self.scale_x
-        fy = -1.0 #* self.scale_y
-        print fx, fy, bounds[0], bounds[3], self.dx, self.dy, self.scale_x, self.scale_y
-        print bounds
-        #mtrx = cairo.Matrix(fx,0,0,fy,bounds[0], bounds[3])
-        mtrx = cairo.Matrix(fx,0,0,fy,0-extent[0],height+extent[1])
-        #mtrx = cairo.Matrix(fx,0,0,fy,extent[0],extent[3])
-        #self.ctx.transform(mtrx)
+        fx = 1.0 * self.scale_x
+        fy = -1.0 * self.scale_y
+        left = 0-extent[0]
+        bottom = extent[1]
+        mtrx = cairo.Matrix(fx,0,0,fy,left*self.scale_x,height + bottom*self.scale_y)
+        #mtrx = cairo.Matrix(fx,0,0,fy,left*(fx),bottom*self.scale_y)
+        print mtrx, fx, fy, self.dx, self.dy
         self.ctx.set_matrix(mtrx)
-        #mtrx = cairo.Matrix(self.scale_x,0,0,self.scale_y,0,0)
-        #self.ctx.transform(mtrx)
-        #
-        #self.ctx.translate(0,height)
-        #self.ctx.scale(1.0*self.scale_x, -1.0*self.scale_y) 
        
         self.ctx.rectangle(*self.bounds)
         self.ctx.clip()
@@ -128,6 +122,7 @@ if __name__ == '__main__':
     r.rectangle((45,45,90,90))
     r.circle((0,0), 10)
     r.circle((45,45), 10)
+    r.circle((90,90), 10)    
     r.line(coords=(45,45,90,90))
     r.write_to_png("gcanvas1.png")
 
