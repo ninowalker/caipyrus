@@ -3,6 +3,7 @@ import math
 
 WHITE = (1,1,1,1)
 BLACK = (0,0,0,1)
+TRANSPARENT = (0,0,0,0)
 
 class Canvas(object):
     def __init__(self, width, height, bounds = None):
@@ -61,14 +62,14 @@ class Canvas(object):
         self.ctx.set_source_rgba(*cfill)
         self.ctx.fill()
 
-    def rectangle(self, bounds=None, cfill=WHITE, cstroke=BLACK):
-        self.ctx.rectangle(*bounds)
-        #self.ctx.rectangle(*self.bounds)
+    def rectangle(self, bounds=None, cfill=TRANSPARENT, cstroke=BLACK):
+        print bounds[0], bounds[1], bounds[2] - bounds[0], bounds[3] - bounds[1]
+        self.ctx.move_to(bounds[0], bounds[1])
+        self.ctx.rectangle(bounds[0], bounds[1], bounds[2] - bounds[0], bounds[3] - bounds[1])
+        self.ctx.set_source_rgba(*cfill)
+        self.ctx.fill_preserve()
         self.ctx.set_source_rgba(*cstroke)
         self.ctx.stroke()
-        self.ctx.set_source_rgba(*cfill)
-        self.ctx.fill()
-        
 
     def text(self, point=None, text=None, font_size=1, cfill=BLACK):
         self.ctx.select_font_face("Georgia",
@@ -86,17 +87,15 @@ class Canvas(object):
 class GeographicCanvas(Canvas):
     def __init__(self, width, height, bounds, extent=(-180,-90,180,90)):
         super(GeographicCanvas, self).__init__(width, height, bounds)
-        #self.rectangle((0,0,width,height))
         # flip the axes from upper left, to lower left
         fx = 1.0 * self.scale_x
         fy = -1.0 * self.scale_y
         left = 0-extent[0]
         bottom = extent[1]
-        mtrx = cairo.Matrix(fx,0,0,fy,left*self.scale_x,height + bottom*self.scale_y)
-        #mtrx = cairo.Matrix(fx,0,0,fy,left*(fx),bottom*self.scale_y)
-        print mtrx, fx, fy, self.dx, self.dy
+        mtrx = cairo.Matrix(fx,0,0,fy,
+                            left*self.scale_x,
+                            height + bottom*self.scale_y)
         self.ctx.set_matrix(mtrx)
-       
         self.ctx.rectangle(*self.bounds)
         self.ctx.clip()
 
@@ -115,15 +114,17 @@ if __name__ == '__main__':
     r.circle((0,0), 10)
     r.line(coords=(0,0,50,50,50,100))
     r.circle((100,100), 10)
+    r.rectangle((50,50,200,200))
     r.write_to_png("gcanvas0.png")
 
     r = GeographicCanvas(256,256, (45,45,90,90), extent=(45,45,90,90))
     r.background(cfill=WHITE)
-    r.rectangle((45,45,90,90))
     r.circle((0,0), 10)
     r.circle((45,45), 10)
     r.circle((90,90), 10)    
     r.line(coords=(45,45,90,90))
+    r.rectangle((45,45,50,50), cfill=(1,0,0,1))
+    r.rectangle((45,45,90,90))
     r.write_to_png("gcanvas1.png")
 
     
