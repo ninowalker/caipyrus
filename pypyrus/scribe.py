@@ -6,8 +6,11 @@ BLACK = (0,0,0,1)
 TRANSPARENT = (0,0,0,0)
 
 class Canvas(object):
-    def __init__(self, width, height, bounds = None):
-        self.s = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)
+    def __init__(self, width, height, bounds = None, mode = 'png', fobj=None):
+        if mode == 'png':
+            self.s = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)
+        elif mode == 'svg':
+            self.s = cairo.SVGSurface(fobj, width, height)
         self.w = width
         self.h = height
         if bounds:
@@ -47,37 +50,41 @@ class Canvas(object):
         #self.ctx.clip_extents(*self.bounds)
         self.s.write_to_png(filename)
 
+    def write(self):
+        self.s.flush()
+        self.s.finish()
+
+    def _draw(self, cstroke=None, stroke=None, cfill=None, cap=None):
+        if cfill:
+            self.ctx.set_source_rgba(*cfill)
+            self.ctx.fill_preserve()
+        if cap:
+            self.ctx.set_line_cap(cap)
+        if stroke:
+            self.ctx.set_line_width(stroke*self._stroke_scalar)
+            self.ctx.set_source_rgba(*cstroke)
+            self.ctx.stroke()
+        
+
     def line(self, coords=None, cstroke=BLACK, stroke=1, cap=cairo.LINE_CAP_ROUND):
         self.ctx.move_to(coords[0], coords[1])
         for i in range(2, len(coords), 2):
             self.ctx.line_to(coords[i], coords[i+1])
-        self.ctx.set_source_rgba (*cstroke) # Solid color
-        self.ctx.set_line_width(stroke*self._stroke_scalar)
-        self.ctx.set_line_cap(cap)
-        self.ctx.stroke()
+
+        self._draw(cstroke=cstroke, stroke=stroke, cap=cap)
 
     def circle(self, center=None, radius=None, cfill=WHITE, cstroke=BLACK, stroke=1):
         self.ctx.arc(center[0], center[1], radius, 0, 2 * math.pi)
-        self.ctx.set_source_rgba(*cfill)
-        self.ctx.fill_preserve()
-        self.ctx.set_line_width(stroke*self._stroke_scalar)
-        self.ctx.set_source_rgba(*cstroke)
-        self.ctx.stroke()
+        self._draw(cstroke=cstroke, stroke=stroke, cfill=cfill)
 
     def background(self, cfill=WHITE):
         self.ctx.rectangle(self.bounds[0], self.bounds[1], self.dx, self.dy)
         #self.ctx.rectangle(*self.bounds)
-        self.ctx.set_source_rgba(*cfill)
-        self.ctx.fill()
+        self._draw(cfill=cfill)
 
     def rectangle(self, bounds=None, cfill=TRANSPARENT, cstroke=BLACK, stroke=1):
-        self.ctx.move_to(bounds[0], bounds[1])
         self.ctx.rectangle(bounds[0], bounds[1], bounds[2] - bounds[0], bounds[3] - bounds[1])
-        self.ctx.set_source_rgba(*cfill)
-        self.ctx.fill_preserve()
-        self.ctx.set_line_width(stroke*self._stroke_scalar)
-        self.ctx.set_source_rgba(*cstroke)
-        self.ctx.stroke()
+        self._draw(cstroke=cstroke, stroke=stroke, cfill=cfill)
 
     def text(self, point=None, text=None, font_size=1, cfill=BLACK):
         self.ctx.select_font_face("Georgia",
@@ -93,8 +100,8 @@ class Canvas(object):
         #self.ctx.set_font_face(ff)
     
 class GeographicCanvas(Canvas):
-    def __init__(self, width, height, bounds):
-        super(GeographicCanvas, self).__init__(width, height, bounds)
+    def __init__(self, width, height, bounds, **kwargs):
+        super(GeographicCanvas, self).__init__(width, height, bounds, **kwargs)
         self.scale_strokes(True)
         # flip the axes from upper left, to lower left, and shift the origin
         fx = 1.0 * self.scale_x
@@ -104,7 +111,7 @@ class GeographicCanvas(Canvas):
         mtrx = cairo.Matrix(fx,0,0,fy,
                             left*self.scale_x,
                             height + bottom*self.scale_y)
-        print mtrx
+        #print mtrx
         self.ctx.set_matrix(mtrx)
         self.ctx.rectangle(self.bounds[0],self.bounds[1],self.dx,self.dy)
         self.ctx.clip()
