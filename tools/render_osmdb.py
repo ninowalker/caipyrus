@@ -1,4 +1,4 @@
-from pypyrus import *
+from caipyrus import *
 from graphserver.ext.osm.osmdb import OSMDB
 import sys
 

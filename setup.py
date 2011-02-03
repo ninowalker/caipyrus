@@ -1,10 +1,9 @@
 from setuptools import setup, find_packages
 import os.path, sys, subprocess
 
-setup(  name='pypyrus',
+setup(  name='caipyrus',
         version='0.1',
-        packages = ['pypyrus'],
-        #install_requires=['pycairo'],
+        packages = ['caipyrus'],
         zip_safe=True,
         test_suite='nose.collector',
         
@@ -14,5 +13,5 @@ setup(  name='pypyrus',
         description = "Cairo based procedural rendering tool.",
         license = "BSD",
         keywords = "OSM OpenStreetMap GTFS routing transit",
-        url = "http://github.com/ninowalker/pypyrus/tree/master",
+        url = "http://github.com/ninowalker/caipyrus/tree/master",
 )
