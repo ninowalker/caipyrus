@@ -3,8 +3,8 @@ import os.path, sys, subprocess
 
 setup(  name='pypyrus',
         version='0.1',
-        #packages = ['pypyrus'],
-        install_requires=['pycairo'],
+        packages = ['pypyrus'],
+        #install_requires=['pycairo'],
         zip_safe=True,
         test_suite='nose.collector',
         
